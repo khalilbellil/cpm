@@ -23,6 +23,8 @@ import flag_for_review_logo_green from "../img/flag_for_review_logo_green.png";
 import top_arrow_icon from "../img/top_arrow_icon.png";
 import down_arrow_icon from "../img/down_arrow_icon.png";
 import $ from "jquery";
+const nodeGeocoder = require('node-geocoder');
+const net = require('net');
 
 function Project(props) {
     const [projectData, setProjectData] = useState({})
@@ -47,6 +49,18 @@ function Project(props) {
     const [getNewPrice, setGetNewPrice] = useState(false)
     const [completeAddress, setCompleteAddress] = useState('')
     const [cityData, setCityData] = useState([])
+
+    const options = {
+        // provider: 'google',
+       
+        // // Optional depending on the providers
+        // //fetch: customFetchImplementation,
+        // apiKey: 'AIzaSyD7PI5ZfU6ZnTr0iwxYKpdb7kTDNiHw1e8', // for Mapquest, OpenCage, Google Premier
+        // formatter: null // 'gpx', 'string', ...
+        provider: 'openstreetmap'
+      };
+       
+    const geocoder = nodeGeocoder(options);
 
     useEffect(() => {
         getCities()
@@ -443,13 +457,13 @@ function Project(props) {
         saveAjax("sr_address", addressData.uid, "uid_city", e.target.value)
     }
     const saveAddress = (terms) => {
-        fetch(`http://ssrv5.sednove.com:4000/address/save?street_no=${(terms[0].value)?terms[0].value:""}&street=${(terms[1].value)?terms[1].value:""}&city=${(terms[2].value)?terms[2].value:""}&province=${(terms[3].value)?terms[3].value:""}&country=${(terms[4].value)?terms[4].value:""}&uid_client=${projectData.uid_client}`)
+        fetch(`http://ssrv5.sednove.com:4000/address/save?street_no=${(terms[0].value)?terms[0].value:""}&street=${(terms[1].value)?terms[1].value:""}&city=${(terms[2].value)?terms[2].value:""}&province=${(terms[3].value)?terms[3].value:""}&country=${(terms[4].value)?terms[4].value:""}&uid_client=${projectData.uid_client}&phone1=${(addressData.phone1)?addressData.phone1:""}&phone2=${(addressData.phone2)?addressData.phone2:""}`)
         .then(response => response.json())
         .then(response => {
             setProjectData({...projectData, uid_address: response.data.uid_address})
             saveAjax("sr_project", projectData.uid, "uid_address", response.data.uid_address)
             getUidCity(terms[2].value, response.data.uid_address)
-            getAddress(response.data.uid_address)
+            getZipCode(response.data.uid_address, terms)
         })
         .catch(err => alert(err))
     }
@@ -460,6 +474,16 @@ function Project(props) {
             setAddressData({...addressData, uid_city: response.data[0].uid})
             saveAjax("sr_address", uid_address, "uid_city", response.data[0].uid)
         })
+        .catch(err => alert(err))
+    }
+    const getZipCode = (uid_address, terms) => {
+        fetch(`http://ssrv5.sednove.com:4000/get_zipcode?address=${terms[0].value + " " + terms[1].value + " " + terms[2].value + " " + terms[3].value + " " + terms[4].value}`)
+        .then(response => response.json())
+        .then(response => {
+            setAddressData({...addressData, zip: response.data[0].zipcode})
+            saveAjax("sr_address", uid_address, "zip", response.data[0].zipcode)
+        })
+        .then(() => {getAddress(uid_address)})
         .catch(err => alert(err))
     }
 
