@@ -3,11 +3,8 @@ import '../styles/Project.css'
 import { TextField, FormControlLabel, Checkbox, Input, FormGroup, Card, Button } from '@material-ui/core'
 import { Editor } from '@tinymce/tinymce-react'
 import { format } from 'date-fns';
-import usePlacesAutocomplete, {
-    getGeocode,
-    getLatLng,
-  } from "use-places-autocomplete";
-  import useOnclickOutside from "react-cool-onclickoutside";
+import usePlacesAutocomplete from "use-places-autocomplete";
+import useOnclickOutside from "react-cool-onclickoutside";
 import { Label, Form, CardTitle, CardText } from 'reactstrap';
 import Popup from "reactjs-popup";
 import google_map_logo from "../img/google-maps-round.png";
@@ -23,8 +20,6 @@ import flag_for_review_logo_green from "../img/flag_for_review_logo_green.png";
 import top_arrow_icon from "../img/top_arrow_icon.png";
 import down_arrow_icon from "../img/down_arrow_icon.png";
 import $ from "jquery";
-const nodeGeocoder = require('node-geocoder');
-const net = require('net');
 
 function Project(props) {
     const [projectData, setProjectData] = useState({})
@@ -33,7 +28,6 @@ function Project(props) {
     const [subServicesData, setSubServicesData] = useState([])
     const [serviceQuestionsData, setserviceQuestionsData] = useState([])
     const [callBackLaterData, setCallBackLaterData] = useState({})
-    const [nbFiles, setNbFiles] = useState(0)
     const [uidCancelReason, setUidCancelReason] = useState('')
     const [messageCancelReason, setMessageCancelReason] = useState('')
     const [cancelReasonsData, setCancelReasonsData] = useState([])
@@ -45,22 +39,11 @@ function Project(props) {
     const [popupCancelProject, setPopupCancelProject] = useState(false)
     const [popupActivateProject, setPopupActivateProject] = useState(false)
     const [username, setUsername] = useState('Khalil')
-    const [uidUser, setUidUser] = useState(0)
+    const [uidUser, setUidUser] = useState(335)
     const [getNewPrice, setGetNewPrice] = useState(false)
     const [completeAddress, setCompleteAddress] = useState('')
     const [cityData, setCityData] = useState([])
-
-    const options = {
-        // provider: 'google',
-       
-        // // Optional depending on the providers
-        // //fetch: customFetchImplementation,
-        // apiKey: 'AIzaSyD7PI5ZfU6ZnTr0iwxYKpdb7kTDNiHw1e8', // for Mapquest, OpenCage, Google Premier
-        // formatter: null // 'gpx', 'string', ...
-        provider: 'openstreetmap'
-      };
-       
-    const geocoder = nodeGeocoder(options);
+    const [generalServiceQuestionsData, setGeneralServiceQuestionsData] = useState([])
 
     useEffect(() => {
         getCities()
@@ -93,6 +76,7 @@ function Project(props) {
                 getAddress(response.data[0].uid_address)
                 getCallBackLater(response.data[0].uid)
                 getCancelReasons()
+                getGeneralServiceQuestions()
             }else{
                 alert("Projet introuvable !")
             }
@@ -117,23 +101,24 @@ function Project(props) {
         }
     }
     const getAddress = (uid_address) => {
-        fetch('http://ssrv5.sednove.com:4000/address?uid='+uid_address)
-        .then(response => response.json())
-        .then(response => {
-            response.data[0] = {...response.data[0], 
-                street_no:(response.data[0].street_no === null)?"":response.data[0].street_no,
-                street:(response.data[0].street === null)?"":response.data[0].street,
-                city:(response.data[0].city === null)?"":response.data[0].city,
-                zip:(response.data[0].zip === null)?"":response.data[0].zip,
-                province:(response.data[0].province === null)?"":response.data[0].province,
-                country:(response.data[0].country === null)?"":response.data[0].country
-            }
-            setAddressData(response.data[0])
-            setCompleteAddress(response.data[0].street_no+" "+response.data[0].street+" "+response.data[0].city+" "+response.data[0].zip+" "+
-            response.data[0].province+" "+response.data[0].country)
-        })
-        .then(() => clearSuggestions())
-        .catch(err => alert(err))
+        if (uid_address)
+            fetch('http://ssrv5.sednove.com:4000/address?uid='+uid_address)
+            .then(response => response.json())
+            .then(response => {
+                response.data[0] = {...response.data[0], 
+                    street_no:(response.data[0].street_no === null)?"":response.data[0].street_no,
+                    street:(response.data[0].street === null)?"":response.data[0].street,
+                    city:(response.data[0].city === null)?"":response.data[0].city,
+                    zip:(response.data[0].zip === null)?"":response.data[0].zip,
+                    province:(response.data[0].province === null)?"":response.data[0].province,
+                    country:(response.data[0].country === null)?"":response.data[0].country
+                }
+                setAddressData(response.data[0])
+                setCompleteAddress(response.data[0].street_no+" "+response.data[0].street+" "+response.data[0].city+" "+response.data[0].zip+" "+
+                response.data[0].province+" "+response.data[0].country)
+            })
+            .then(() => clearSuggestions())
+            .catch(err => alert(err))
     }
     const countFiles = (project) => {
         var count = 0;
@@ -190,6 +175,13 @@ function Project(props) {
         fetch('http://ssrv5.sednove.com:4000/service_questions?uid_service='+uid_service)
         .then(response => response.json())
         .then(response => setserviceQuestionsData(response.data))
+        .catch(err => alert(err))
+    }
+    const getGeneralServiceQuestions = () => {
+        setGeneralServiceQuestionsData([])
+        fetch('http://ssrv5.sednove.com:4000/service_questions?uid_service=161')
+        .then(response => response.json())
+        .then(response => setGeneralServiceQuestionsData(response.data))
         .catch(err => alert(err))
     }
     const activateProject = () => {
@@ -528,17 +520,28 @@ function Project(props) {
                             <Card body inverse class="popup">
                             <CardTitle class="popupbox_title" style={{textAlign:"center"}}>Annuler le projet !</CardTitle>
                             <CardText style={{textAlign:"center"}}>Merci de choisir la raison d'annulation et/ou remplir la case autre:</CardText>
-                            <Input type="select" value={uidCancelReason} onChange={(val)=>{setUidCancelReason(val.target.value)}}>
-                                <option value="0">Choisir une raison d'annulation</option>
-                                {cancelReasonsData.map((s, i) =>
-                                (
-                                <option value={s.uid}>{s.reason_fr}</option>
-                                )
-                                )}
-                            </Input>
-                            <i style={{paddingTop:"5px"}}>Si tu ne choisis aucune raison de la liste aucun courriel ne sera envoyé automatiquement au client.</i>
-                            <Label style={{paddingTop:"5px"}}>Autre :</Label>
-                            <Input type="textarea" value={messageCancelReason} onChange={(val)=>{setMessageCancelReason(val.target.value)}}></Input>
+                            <div class="col-12">
+                                <TextField select label="Raison"
+                                value={uidCancelReason}
+                                SelectProps={{
+                                    native: true,
+                                }}
+                                variant="outlined"
+                                onChange={handleServiceChange} name="uid_service" onChange={(val)=>{setUidCancelReason(val.target.value)}}>
+                                    <option value="-1">Choisir une raison d'annulation</option>
+                                    {cancelReasonsData.map((s, i) =>
+                                    (
+                                    <option value={s.uid}>{s.reason_fr}</option>
+                                    )
+                                    )}
+                                </TextField>
+                            </div>
+                            <i class="col-12 pt-1" style={{paddingTop:"5px"}}>Si tu ne choisis aucune raison de la liste aucun courriel ne sera envoyé automatiquement au client.</i>
+                            <div class="col-12 pt-2">
+                                <TextField defaultValue=" " label="Autre" variant="outlined" name="cancel_reason_message"
+                                onChange={(val)=>{setMessageCancelReason(val.target.value)}} 
+                                value={messageCancelReason}/>
+                            </div>
                             <br/>
                             <div class="row">
                                 <Button class="col ml-3 popupbox_button" onClick={()=> {cancelProject()}}>Oui</Button>
@@ -560,7 +563,23 @@ function Project(props) {
                         <Card body inverse class="popup">
                         <CardTitle class="popupbox_title" style={{textAlign:"center"}}>Envoyer un courriel avec les questions suivantes:</CardTitle>
                         <CardText class="popupbox_content">
-                        {
+                            {
+                            generalServiceQuestionsData.map((sq, i) =>
+                            (
+                            <div class="col">
+                                <FormControlLabel
+                                    control={
+                                    <Checkbox
+                                        name="question" id={"question_"+sq.uid}
+                                        color="primary"
+                                    />
+                                    }
+                                    label={sq.question_fr}
+                                />
+                            </div>
+                            )
+                            )}
+                            {
                             serviceQuestionsData.map((sq, i) =>
                             (
                             <div class="col">
@@ -673,11 +692,11 @@ function Project(props) {
                         <Card body inverse class="popup">
                         <CardTitle class="popupbox_title" style={{textAlign:"center"}}>Fichiers joints</CardTitle>
                         <CardText style={{textAlign:"center"}}>
-                            {(projectData.file1)?(<img width="375px" onClick={() => window.open("https://soumissionrenovation.ca"+projectData.file1, "_blank")} src={"https://soumissionrenovation.ca"+projectData.file1} style={{cursor: "pointer"}}></img>):(null)}
-                            {(projectData.file2)?(<img width="375px" onClick={() => window.open("https://soumissionrenovation.ca"+projectData.file2, "_blank")} src={"https://soumissionrenovation.ca"+projectData.file2} style={{cursor: "pointer"}}></img>):(null)}
-                            {(projectData.file3)?(<img width="375px" onClick={() => window.open("https://soumissionrenovation.ca"+projectData.file3, "_blank")} src={"https://soumissionrenovation.ca"+projectData.file3} style={{cursor: "pointer"}}></img>):(null)}
-                            {(projectData.file4)?(<img width="375px" onClick={() => window.open("https://soumissionrenovation.ca"+projectData.file4, "_blank")} src={"https://soumissionrenovation.ca"+projectData.file4} style={{cursor: "pointer"}}></img>):(null)}
-                            {(projectData.file5)?(<img width="375px" onClick={() => window.open("https://soumissionrenovation.ca"+projectData.file5, "_blank")} src={"https://soumissionrenovation.ca"+projectData.file5} style={{cursor: "pointer"}}></img>):(null)}
+                            {(projectData.file1)?(<img width="375px" alt="Ouvrir" onClick={() => window.open("https://soumissionrenovation.ca"+projectData.file1, "_blank")} src={"https://soumissionrenovation.ca"+projectData.file1} style={{cursor: "pointer"}}></img>):(null)}
+                            {(projectData.file2)?(<img width="375px" alt="Ouvrir" onClick={() => window.open("https://soumissionrenovation.ca"+projectData.file2, "_blank")} src={"https://soumissionrenovation.ca"+projectData.file2} style={{cursor: "pointer"}}></img>):(null)}
+                            {(projectData.file3)?(<img width="375px" alt="Ouvrir" onClick={() => window.open("https://soumissionrenovation.ca"+projectData.file3, "_blank")} src={"https://soumissionrenovation.ca"+projectData.file3} style={{cursor: "pointer"}}></img>):(null)}
+                            {(projectData.file4)?(<img width="375px" alt="Ouvrir" onClick={() => window.open("https://soumissionrenovation.ca"+projectData.file4, "_blank")} src={"https://soumissionrenovation.ca"+projectData.file4} style={{cursor: "pointer"}}></img>):(null)}
+                            {(projectData.file5)?(<img width="375px" alt="Ouvrir" onClick={() => window.open("https://soumissionrenovation.ca"+projectData.file5, "_blank")} src={"https://soumissionrenovation.ca"+projectData.file5} style={{cursor: "pointer"}}></img>):(null)}
                         </CardText>
                         <div class="row">
                             <Button class="col ml-3 mr-3 popupbox_button" onClick={()=> {setPopupOpenFiles(false)}}>OK</Button>
@@ -735,7 +754,7 @@ function Project(props) {
                         </FormGroup>
                         <FormGroup>
                         <Label>Type de budget:</Label>
-                        <Input type="text" value={projectData.budget_type} disabled/>
+                        <Input type="text" value={(projectData.budget_type === "1")?"Budget pour main d'oeuvre uniquement":"Budget pour main d'oeuvre + matériaux"} disabled/>
                         </FormGroup>
                         <FormGroup>
                         <Label>Type de propriété:</Label>
@@ -939,7 +958,7 @@ function Project(props) {
                         </div>
                     </div>
                     <div class="col-12" ref={addressRef}>
-                        <TextField defaultValue=" " label="Adresse*" variant="outlined" name="complete_address"
+                        <TextField defaultValue=" " fullWidth label="Adresse*" variant="outlined" name="complete_address"
                         onChange={handleAddressChange} disabled={!ready}
                         value={completeAddress}/>
                         {status === "OK" && <ul>{renderSuggestions()}</ul>}

@@ -5,8 +5,10 @@ import '../styles/Project.css'
 
 function History(props) {
     const [historyData, setHistoryData] = useState([])
+    const [uidClient, setUidClient] = useState([])
 
     useEffect(() => {
+        setUidClient(props.uid_client)
         getHistory(props.uid_client)
     }, [props.uid_client]);
     useEffect(() => {
@@ -14,11 +16,13 @@ function History(props) {
     }, [props.reload_history]);
 
     const getHistory = (uid) => {
-        setHistoryData([])
-        fetch(`http://ssrv5.sednove.com:4000/client_history/get_by_client?uid_client=${uid}&lg=fr`)
-        .then(response => response.json())
-        .then(response => setHistoryData(response.data))
-        .catch(err => alert(err))
+        if (uid !== 0){
+            setHistoryData([])
+            fetch(`http://ssrv5.sednove.com:4000/client_history/get_by_client?uid_client=${uid}&lg=fr`)
+            .then(response => response.json())
+            .then(response => setHistoryData(response.data))
+            .catch(err => alert(err))
+        }
     }
 
     return (

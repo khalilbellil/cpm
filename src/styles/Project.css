@@ -31,6 +31,9 @@
 .project .second_form_info{
     padding: 1%;
 }
+.project .second_form_info input:disabled{
+  color: #3F51B5
+}
 .popup{
     border: solid 4px #747474;
     background-color: white;

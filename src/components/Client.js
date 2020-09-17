@@ -16,18 +16,19 @@ function Client(props) {
         .catch(err => alert(err))
     }
     const getClientData = (uid_client) => {
-        fetch('http://ssrv5.sednove.com:4000/clients/get?uid='+uid_client)
-        .then(response => response.json())
-        .then(response => {
-            if (response.data[0] !== undefined){
-                setClientData(response.data[0])
-            }else{
-                setClientData({})
-                alert("Client introuvable !")
-            }
-        })
-        .then(() => getClientAddress(uid_client))
-        .catch(err => alert(err))
+        if (uid_client !== 0)
+            fetch('http://ssrv5.sednove.com:4000/clients/get?uid='+uid_client)
+            .then(response => response.json())
+            .then(response => {
+                if (response.data[0] !== undefined){
+                    setClientData(response.data[0])
+                }else{
+                    setClientData({})
+                    alert("Client introuvable !")
+                }
+            })
+            .then(() => getClientAddress(uid_client))
+            .catch(err => alert(err))
     }
     const getClientAddress = (uid_client) => {
         fetch('http://ssrv5.sednove.com:4000/client_phone?uid_client='+uid_client)
@@ -58,7 +59,7 @@ function Client(props) {
             </div>
             <div class="row">
                 <div class="col client__input">
-                    <TextField defaultValue=" " label="Courriel*" variant="outlined" name="email"
+                    <TextField defaultValue=" " fullWidth label="Courriel*" variant="outlined" name="email"
                     value={clientData.email} onChange={(e) => {setClientData({...clientData,email:e.target.value});saveAjax("sr_client",clientData.uid,"email",e.target.value);}}/>
                 </div>
                 <div class="col client__input">
@@ -75,11 +76,11 @@ function Client(props) {
             </div>
             <div class="row">
                 <div class="col client__input">
-                    <TextField defaultValue=" " label="Quand appeler ?*" variant="outlined" name="when_to_call"
+                    <TextField defaultValue=" " fullWidth label="Quand appeler ?*" variant="outlined" name="when_to_call"
                     value={clientData.when_to_call} onChange={(e) => {setClientData({...clientData,when_to_call:e.target.value});saveAjax("sr_client",clientData.uid,"when_to_call",e.target.value);}}/>
                 </div>
                 <div class="col client__input">
-                    <TextField defaultValue=" " label="Commentaire interne*" variant="outlined" name="comments"
+                    <TextField defaultValue=" " fullWidth label="Commentaire interne*" variant="outlined" name="comments"
                     value={clientData.comments} onChange={(e) => {setClientData({...clientData,comments:e.target.value});saveAjax("sr_client",clientData.uid,"comments",e.target.value);}}/>
                 </div>
                 <div class="col client__input">
