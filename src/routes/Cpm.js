@@ -28,6 +28,7 @@ function Cpm() {
     }, []);
 
     const getClientProjectsUids = (uid_client) => {
+        setClientProjectsUids([])
         fetch('http://ssrv5.sednove.com:4000/client/get_projects?uid_client='+uid_client)
         .then(response => response.json())
         .then(response => setClientProjectsUids(response.data))

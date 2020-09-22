@@ -98,3 +98,11 @@
   .sidebar {padding-top: 15px;}
   .sidebar a {font-size: 18px;}
 }
+
+.description__choose_file{
+  margin-top: 8px;
+  margin-right: 10px;
+}
+.description__choose_file_name{
+  margin-right: 20px;
+}

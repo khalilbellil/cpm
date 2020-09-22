@@ -20,6 +20,8 @@ import flag_for_review_logo_green from "../img/flag_for_review_logo_green.png";
 import top_arrow_icon from "../img/top_arrow_icon.png";
 import down_arrow_icon from "../img/down_arrow_icon.png";
 import $ from "jquery";
+import DropZone from '../components/DropZone';
+import axios from 'axios';
 
 function Project(props) {
     const [projectData, setProjectData] = useState({})
@@ -44,6 +46,8 @@ function Project(props) {
     const [completeAddress, setCompleteAddress] = useState('')
     const [cityData, setCityData] = useState([])
     const [generalServiceQuestionsData, setGeneralServiceQuestionsData] = useState([])
+    const [dialerPrefix, setDialerPrefix] = useState('')
+    const [selectedFile, setSelectedFile] = useState('');
 
     useEffect(() => {
         getCities()
@@ -57,7 +61,7 @@ function Project(props) {
     }, [getNewPrice])
 
     const saveAjax = (table, uid, one, one_val) => {
-        fetch(`http://ssrv5.sednove.com:4000/update/one?table=${table}&uid=${uid}&one=${one}&one_val=${one_val}`)
+        fetch(encodeURI(`http://ssrv5.sednove.com:4000/update/one?table=${table}&uid=${uid}&one=${one}&one_val=${one_val}`))
         .catch(err => alert(err))
     }
     const getProjectData = (uid_project) => {
@@ -113,6 +117,7 @@ function Project(props) {
                     province:(response.data[0].province === null)?"":response.data[0].province,
                     country:(response.data[0].country === null)?"":response.data[0].country
                 }
+                getDialerPrefix(response.data[0].phone1)
                 setAddressData(response.data[0])
                 setCompleteAddress(response.data[0].street_no+" "+response.data[0].street+" "+response.data[0].city+" "+response.data[0].zip+" "+
                 response.data[0].province+" "+response.data[0].country)
@@ -155,20 +160,25 @@ function Project(props) {
     }
     const saveAjaxAddress = (table, uid, one, one_val) => {
         if (addressData.uid !== undefined){
-          fetch(`http://ssrv5.sednove.com:4000/update/one?table=${table}&uid=${uid}&one=${one}&one_val=${one_val}`)
-          .then(response => response.json())
-          .catch(err => alert(err))
-        }else{
-          fetch(`http://ssrv5.sednove.com:4000/address/add?one=${one}&one_val=${one_val}&uid_client=${projectData.uid_client}`)
-          .then(response => response.json())
-          .then(response => {
-            alert(response.data.uid_address)
-            setProjectData({...projectData, uid_address: response.data.uid_address})
-            saveAjax("sr_project", projectData.uid, "uid_address", response.data.uid_address)
-            getAddress(response.data.uid_address)
-          })
-          .catch(err => alert(err))
-        }
+            fetch(`http://ssrv5.sednove.com:4000/update/one?table=${table}&uid=${uid}&one=${one}&one_val=${one_val}`)
+            .then(() => {
+                if(one === "phone1"){
+                    setAddressData({...addressData, phone1: one_val})
+                }else{
+                    setAddressData({...addressData, phone2: one_val})
+                }
+            })
+            .catch(err => alert("saveAjaxAddress" + err))
+          }else{
+            fetch(`http://ssrv5.sednove.com:4000/address/add?one=${one}&one_val=${one_val}&uid_client=${projectData.uid_client}`)
+            .then(response => response.json())
+            .then(response => {
+              setProjectData({...projectData, uid_address: response.data.uid_address})
+              saveAjax("sr_project", projectData.uid, "uid_address", response.data.uid_address)
+              getAddress(response.data.uid_address)
+            })
+            .catch(err => alert("saveAjaxAddress" + err))
+          }
     }
     const getServiceQuestions = (uid_service) => {
         setserviceQuestionsData([])
@@ -279,6 +289,7 @@ function Project(props) {
     }
     const handleEditorChange = (content, editor) => {
         setProjectData({...projectData,description: content})
+        console.log(content)
         saveAjax("sr_project",projectData.uid,"description",content)
     }
     const handleEmployeeChange = (e) => {
@@ -403,6 +414,48 @@ function Project(props) {
         else
           arrow.src = top_arrow_icon
     }
+    const getDialerPrefix = (phone) => {
+        if (phone !== "" && phone !== undefined && phone !== "null" && phone !== " " && phone !== null && phone[3] !== undefined){
+            let _phone = ""
+            if (phone[0] === " "){
+                _phone = phone[1] + phone[2] + phone[3]
+            }else{
+                _phone = phone[0] + phone[1] + phone[2]
+            }
+            _phone = _phone.replace(" ", "")
+            fetch(`http://ssrv5.sednove.com:4000/get_dialer_prefix?first_digits=${_phone}`)
+            .then(response => response.json())
+            .then(response => {
+                if (response.data[0] !== undefined)
+                    response.data[0].ext = "*" + response.data[0].ext
+                    setDialerPrefix(response.data[0].ext)
+            })
+            .catch(err => alert(err))
+        }
+    }
+    const handleUploadFile = (file) => {
+        const data = new FormData()
+        data.append('avatar', file)
+        axios.post('http://ssrv5.sednove.com:4000/upload-file', data).then(res => {
+            if (res.status === 200)
+                alert(res.status)
+        })
+    }
+    const onFileChangeHandler = (event) => {
+        setSelectedFile(event.target.files[0])
+        console.log(event.target.files[0])
+    }
+    const onClickUploadFile = (event) => {
+        const data = new FormData()
+        data.append('avatar', selectedFile)
+        axios.post('http://ssrv5.sednove.com:4000/upload-file', data)
+        .then(res => {
+            console.log(res.data.data.path)
+            let content = `<p><img name="added_img_${projectData.uid}" src="https://soumissionrenovation.ca${res.data.data.path}" width="375" /></p>`
+            setProjectData({...projectData,description: projectData.description+content})
+            //saveAjax("sr_project",projectData.uid,"description",content)
+        })
+    }
 
     //#region Address Autocomplete
     const handleAddressChange = (e) => {
@@ -496,8 +549,8 @@ function Project(props) {
                         <CardTitle class="popupbox_title" style={{textAlign:"center"}}>Activer le projet</CardTitle>
                         <CardText class="popupbox_content" style={{textAlign:"center"}}>Etes-vous sûre ?</CardText>
                         <div class="row">
-                            <Button class="col ml-3 popupbox_button" onClick={()=> {activateProject()}}>Oui</Button>
-                            <Button class="col ml-2 mr-3 popupbox_button" onClick={()=> setPopupActivateProject(false)}>Annuler</Button>
+                            <Button class="col ml-3 popupbox_button" variant="contained" color="primary" onClick={()=> {activateProject()}}>Oui</Button>
+                            <Button class="col ml-2 mr-3 popupbox_button" variant="contained" color="primary" onClick={()=> setPopupActivateProject(false)}>Annuler</Button>
                         </div>
                         </Card>
                     </span>
@@ -514,7 +567,7 @@ function Project(props) {
                         {(projectData.status === "cancelled-after-qualification" || projectData.status === "cancelled-before-qualification")?(
                             <Card body inverse class="popup">
                             <CardTitle id="popupbox_title" style={{textAlign:"center"}}>Le projet a déjà été annulé !</CardTitle>
-                            <Button class="col popupbox_button" onClick={()=> {setPopupCancelProject(false)}}>OK</Button>
+                            <Button class="col popupbox_button" variant="contained" color="primary" onClick={()=> {setPopupCancelProject(false)}}>OK</Button>
                             </Card>
                         ):(
                             <Card body inverse class="popup">
@@ -544,8 +597,8 @@ function Project(props) {
                             </div>
                             <br/>
                             <div class="row">
-                                <Button class="col ml-3 popupbox_button" onClick={()=> {cancelProject()}}>Oui</Button>
-                                <Button class="col ml-2 mr-3 popupbox_button" onClick={()=> {setPopupCancelProject(false)}}>Annuler</Button>
+                                <Button class="col ml-3 popupbox_button" variant="contained" color="primary" onClick={()=> {cancelProject()}}>Oui</Button>
+                                <Button class="col ml-2 mr-3 popupbox_button" variant="contained" color="primary" onClick={()=> {setPopupCancelProject(false)}}>Annuler</Button>
                             </div>
                             </Card>
                         )}
@@ -598,7 +651,10 @@ function Project(props) {
                             <Label>Question personnalisée :</Label>
                             <Input type="textarea" value={messageSendQuestions} onChange={(val)=>{setMessageSendQuestions(val.target.value)}} />
                         </CardText>
-                        <Button class="popupbox_button" onClick={()=> {getCheckedQuestions()}}>Envoyer</Button>
+                        <div class="col-12">
+                            <Button class="popupbox_button" variant="contained" color="primary" onClick={()=> {getCheckedQuestions()}}>Envoyer</Button>
+                            <Button class="popupbox_button" variant="contained" color="primary" onClick={()=> {setPopupOpenSendQuestions(false)}}>Annuler</Button>
+                        </div>
                         </Card>  
                     </span>
                     </Popup>
@@ -612,22 +668,29 @@ function Project(props) {
                     >
                     <span>
                         <Card body inverse class="popup">
-                        <CardTitle class="popupbox_title" style={{textAlign:"center"}}>Rappeler plus tard:</CardTitle>
-                        <i>Note: Le projet sera remit dans les nouveaux clients 5 min avant l'heure de rappel.</i>
-                        <Label for="date_callbacklater">Date:</Label>
-                        <Input type="date" id="date_callbacklater" />
-                        <Label for="time_callbacklater">Heure:</Label>
-                        <Input type="time" id="time_callbacklater" />
-                        <Label for="comment_callbacklater">Commentaire / Raison:</Label>
-                        <Input type="textarea" id="comment_callbacklater" />
-                        <br/>
-                        <Button class="popupbox_button" onClick={()=> {callBackLater()}}>Confirmer</Button>
+                            <CardTitle class="col-12 popupbox_title" style={{textAlign:"center"}}>Rappeler plus tard:</CardTitle>
+                            <i class="col-12">Note: Le projet sera remit dans les nouveaux clients 5 min avant l'heure de rappel.</i>
+                            <div class="col-12 pt-3">
+                                <TextField defaultValue="2020-01-01" type="date" label="Date*" variant="outlined" name="date_callbacklater" id="date_callbacklater" />
+                            </div>
+                            <div class="col-12 pt-3">
+                                <TextField defaultValue="00:00" type="time" label="Heure*" variant="outlined" name="date_callbacklater" id="time_callbacklater" />
+                            </div>
+                            <div class="col-12 pt-3">
+                                <TextField defaultValue=" " fullWidth label="Commentaire / Raison" variant="outlined" name="comment_callbacklater" id="comment_callbacklater"
+                                onChange={(e)=>{ setMessageCancelReason(e.target.value)}} value={messageCancelReason}/>
+                            </div>
+                            <br/>
+                            <div class="col-12">
+                                <Button class="popupbox_button" variant="contained" color="primary" onClick={() => {callBackLater()}}>Confirmer</Button>
+                                <Button class="popupbox_button" variant="contained" color="primary" onClick={() => {setPopupCallBackLater(false)}}>Annuler</Button>
+                            </div>
                         </Card>
                     </span>
                     </Popup>
                 </div>
                 <div class="col">
-                    <img width="40px" src={call_logo} alt="Appeler" onClick={() => window.open('tel:'+addressData.phone1, "_self")}></img>
+                    <img width="40px" src={call_logo} alt="Appeler" onClick={() => window.open('tel:'+ dialerPrefix +addressData.phone1, "_self")}></img>
                 </div>
                 <div class="col">
                     <img width="40px" src={google_map_logo} alt="Google Map" onClick={() => openGoogleMap()}></img>
@@ -650,7 +713,7 @@ function Project(props) {
                     <span>
                         <Card body inverse class="popup">
                         <CardTitle class="popupbox_title" style={{textAlign:"center"}}>Le projet a déjà été signalé pour être revu !</CardTitle>
-                        <Button class="col popupbox_button" onClick={()=> {setPopupOpenFlagForReview(false)}}>OK</Button>
+                        <Button class="col popupbox_button" variant="contained" color="primary" onClick={()=> {setPopupOpenFlagForReview(false)}}>OK</Button>
                         </Card>
                     </span>
                 ):
@@ -661,8 +724,8 @@ function Project(props) {
                         <CardText style={{textAlign:"center"}}>Etes-vous sûre de vouloir marquer ce projet pour qu'il puisse etre revu ?</CardText>
                         <br/>
                         <div class="row">
-                            <Button class="col ml-3 popupbox_button" onClick={()=> {flagForReview()}}>Oui</Button>
-                            <Button class="col ml-2 mr-3 popupbox_button" onClick={()=> {setPopupOpenFlagForReview(false)}}>Annuler</Button>
+                            <Button class="col ml-3 popupbox_button" variant="contained" color="primary" onClick={()=> {flagForReview()}}>Oui</Button>
+                            <Button class="col ml-2 mr-3 popupbox_button" variant="contained" color="primary" onClick={()=> {setPopupOpenFlagForReview(false)}}>Annuler</Button>
                         </div>
                     </Card>
                     </span>
@@ -711,14 +774,15 @@ function Project(props) {
             </div>
             <div id={"tohide_"+projectData.uid} style={{display: "none"}}>
                 <div class="row description">
-                <div class="col-12 description__label">
+                    <div class="col-12 description__label">
                 <h6 style={{textAlign:"center"}}>Description</h6>
                 </div>
-                <div class="col-12 description__editor">
+                    <div class="col-12 description__editor">
                     <Editor
                         apiKey="rpg0vwsws34iize77k9uf2afya24z2f7wqq3i3rg84evn1k3" 
                         initialValue={projectData.description}
                         value={projectData.description}
+                        outputFormat='html'
                         init={{
                         height: 400,
                         menubar: false,
@@ -733,8 +797,14 @@ function Project(props) {
                         onEditorChange={handleEditorChange}
                     />
                 </div>
-            </div>
-                <div class="row p-1">
+                    <div class="col-12">
+                        <label class="btn btn-primary description__choose_file" for={"choose_file_"+projectData.uid} >Choisir une image</label>
+                        <i class="description__choose_file_name">{(selectedFile.name !== undefined)?selectedFile.name:"..."}</i>
+                        <button type="button" class="btn btn-success" onClick={onClickUploadFile}>Ajouter l'image</button>
+                        <input type="file" name="file" style={{visibility: "hidden"}} onChange={onFileChangeHandler} id={"choose_file_"+projectData.uid}/>
+                    </div>
+                </div>
+            <div class="row p-1">
                 <div class="col second_form_info">
                     <div class="col-12 second_form_info__title">
                         <h6 style={{textAlign:"center"}}>Informations du 2ème formulaire</h6>
@@ -947,12 +1017,12 @@ function Project(props) {
                         <div class="row">
                             <div class="col">
                                 <TextField defaultValue=" " type="phone" label="Téléphone*" variant="outlined" name="phone1"
-                                onChange={(e)=>{setAddressData({...addressData, phone1: e.target.value});saveAjax("sr_address",projectData.uid_address, "phone1", e.target.value)}} 
+                                onChange={(e) => {saveAjaxAddress("sr_address", projectData.uid_address, "phone1", e.target.value)}} 
                                 value={addressData.phone1}/>
                             </div>
                             <div class="col">
                                 <TextField defaultValue=" " type="phone" label="Autre téléphone" variant="outlined" name="phone2"
-                                onChange={(e)=>{setAddressData({...addressData, phone2: e.target.value});saveAjax("sr_address",projectData.uid_address, "phone2", e.target.value)}} 
+                                onChange={(e) => saveAjaxAddress("sr_address", projectData.uid_address, "phone2", e.target.value)}
                                 value={addressData.phone2}/>
                             </div>
                         </div>
@@ -1004,8 +1074,8 @@ function Project(props) {
                     </div>
                 </div>
             </div>
-            </div>
         </div>
+    </div>
     )
 }
 
