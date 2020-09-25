@@ -392,7 +392,7 @@ function Project(props) {
         sendQuestionsEmail("clientsProjectQuestions", uid_questions)
     }
     const sendQuestionsEmail = (name, uid_questions) => {
-        fetch(`http://ssrv5.sednove.com:4000/nodemailer/sendquestions?uid_client=${projectData.uid_client}&uid_questions=${uid_questions}&uid_service=${projectData.uid_service}&message=${messageSendQuestions}&name=${name}`)
+        fetch(`http://ssrv5.sednove.com:4000/nodemailer/sendquestions?uid_project=${projectData.uid}&uid_client=${projectData.uid_client}&uid_questions=${uid_questions}&uid_service=${projectData.uid_service}&message=${messageSendQuestions}&name=${name}`)
         .then(() => {
           addHistory("2", "");
           setPopupOpenSendQuestions(false)
@@ -792,7 +792,7 @@ function Project(props) {
                             'insertdatetime media table paste code help wordcount'
                         ],
                         toolbar:
-                            'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help'
+                            'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent table | removeformat | code help'
                         }}
                         onEditorChange={handleEditorChange}
                     />
