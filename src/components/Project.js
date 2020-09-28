@@ -20,7 +20,6 @@ import flag_for_review_logo_green from "../img/flag_for_review_logo_green.png";
 import top_arrow_icon from "../img/top_arrow_icon.png";
 import down_arrow_icon from "../img/down_arrow_icon.png";
 import $ from "jquery";
-import DropZone from '../components/DropZone';
 import axios from 'axios';
 
 function Project(props) {
@@ -48,6 +47,7 @@ function Project(props) {
     const [generalServiceQuestionsData, setGeneralServiceQuestionsData] = useState([])
     const [dialerPrefix, setDialerPrefix] = useState('')
     const [selectedFile, setSelectedFile] = useState('');
+    const [nbPastedImg, setNbPastedImg] = useState(0)
 
     useEffect(() => {
         getCities()
@@ -59,9 +59,11 @@ function Project(props) {
             setGetNewPrice(false)
         }
     }, [getNewPrice])
-
+//#region FUNCTIONS
     const saveAjax = (table, uid, one, one_val) => {
+        props.loadingSpinner(true)
         fetch(encodeURI(`http://ssrv5.sednove.com:4000/update/one?table=${table}&uid=${uid}&one=${one}&one_val=${one_val}`))
+        .then(() => props.loadingSpinner(false))
         .catch(err => alert(err))
     }
     const getProjectData = (uid_project) => {
@@ -195,31 +197,37 @@ function Project(props) {
         .catch(err => alert(err))
     }
     const activateProject = () => {
-        if(projectData.status !== "active")
-          fetch('http://ssrv5.sednove.com:4000/projects/activate?uid='+projectData.uid)
-          .then(() => {
-            //clientProjectActivated(uid_project) or employeeProjectActivated(uid_project) then adminProjectActivated(uid_project)
-            getProjectData(projectData.uid);
-            addHistory("8", "")
-            setPopupActivateProject(false)
-          })
-          .catch(err => alert(err))
-        else
-          alert("Project already activated !")
+        if(projectData.status !== "active"){
+            props.loadingSpinner(true)
+            fetch('http://ssrv5.sednove.com:4000/projects/activate?uid='+projectData.uid)
+            .then(() => {
+              //clientProjectActivated(uid_project) or employeeProjectActivated(uid_project) then adminProjectActivated(uid_project)
+              getProjectData(projectData.uid);
+              addHistory("8", "")
+              setPopupActivateProject(false)
+            })
+            .then(() => props.loadingSpinner(false))
+            .catch(err => alert(err))
+        }else{
+            alert("Project already activated !")
+        }
     }
     const cancelProject = () => {
-        if(projectData.status !== "cancelled-before-qualification" && projectData.status !== "cancelled-after-qualification")
-          fetch(`http://ssrv5.sednove.com:4000/projects/cancel?uid=${projectData.uid}&status=${projectData.status}&uid_cancel_reason=${(uidCancelReason === '')?"0":uidCancelReason}
-          &message=${messageCancelReason}&uid_client=${projectData.uid_client}&uid_user=${uidUser}`)
-          .then(() => {
-            //clientProjectCanceled(uid_project)
-            getProjectData(projectData.uid);
-            addHistory("7", "")
-            setPopupCancelProject(false)
-          })
-          .catch(err => alert(err))
-        else
-          alert("Projet déjà annulé !")
+        if(projectData.status !== "cancelled-before-qualification" && projectData.status !== "cancelled-after-qualification"){
+            props.loadingSpinner(true)
+            fetch(`http://ssrv5.sednove.com:4000/projects/cancel?uid=${projectData.uid}&status=${projectData.status}&uid_cancel_reason=${(uidCancelReason === '')?"0":uidCancelReason}
+            &message=${messageCancelReason}&uid_client=${projectData.uid_client}&uid_user=${uidUser}`)
+            .then(() => {
+              //clientProjectCanceled(uid_project)
+              getProjectData(projectData.uid);
+              addHistory("7", "")
+              setPopupCancelProject(false)
+            })
+            .then(() => props.loadingSpinner(false))
+            .catch(err => alert(err))
+        }else{
+            alert("Projet déjà annulé !")
+        }
     }
     const addHistory = (uid_msg, comments) => {
         fetch(`http://ssrv5.sednove.com:4000/client_history/add?uid_msg=${uid_msg}&uid_client=${projectData.uid_client}&uid_project=${projectData.uid}
@@ -245,29 +253,35 @@ function Project(props) {
         var comment_callbacklater = document.getElementById("comment_callbacklater").value;
         var call_back_date = date_callbacklater + " " + time_callbacklater + ":00";
         if(callBackLaterData === {}){
-          fetch(`http://ssrv5.sednove.com:4000/callbacklater/add?uid_project=${projectData.uid}&uid_client=${projectData.uid_client}&call_back_date=${call_back_date}&followup_agent=${username}&comments=${comment_callbacklater}`)
-          .then(() => {
-            addHistory("3", "")
-            setPopupCallBackLater(false)
-          })
-          .catch(err => alert(err))
+            props.loadingSpinner(true)
+            fetch(`http://ssrv5.sednove.com:4000/callbacklater/add?uid_project=${projectData.uid}&uid_client=${projectData.uid_client}&call_back_date=${call_back_date}&followup_agent=${username}&comments=${comment_callbacklater}`)
+            .then(() => {
+                addHistory("3", "")
+                setPopupCallBackLater(false)
+            })
+            .then(() => props.loadingSpinner(false))
+            .catch(err => alert(err))
         }else{
-          fetch(`http://ssrv5.sednove.com:4000/callbacklater/update?uid_project=${projectData.uid}&uid_client=${projectData.uid_client}&call_back_date=${call_back_date}&followup_agent=${username}&comments=${comment_callbacklater}`)
-          .then(() => {
-            addHistory("3", "")
-            setPopupCallBackLater(false)
-          })
-          .catch(err => alert(err))
+            props.loadingSpinner(true)
+            fetch(`http://ssrv5.sednove.com:4000/callbacklater/update?uid_project=${projectData.uid}&uid_client=${projectData.uid_client}&call_back_date=${call_back_date}&followup_agent=${username}&comments=${comment_callbacklater}`)
+            .then(() => {
+                addHistory("3", "")
+                setPopupCallBackLater(false)
+            })
+            .then(() => props.loadingSpinner(false))
+            .catch(err => alert(err))
         }
     }
     const flagForReview = () => {
         if(projectData.flag_for_review !== "1"){
-          fetch(`http://ssrv5.sednove.com:4000/flagforreview/update?uid_project=${projectData.uid}&followup_agent=${username}`)
-          .then(() => {
-            //addHistory("3", "")
-            setPopupOpenFlagForReview(false)
-          })
-          .catch(err => alert(err))
+            props.loadingSpinner(true)
+            fetch(`http://ssrv5.sednove.com:4000/flagforreview/update?uid_project=${projectData.uid}&followup_agent=${username}`)
+            .then(() => {
+                //addHistory("3", "")
+                setPopupOpenFlagForReview(false)
+            })
+            .then(() => props.loadingSpinner(false))
+            .catch(err => alert(err))
         }
     }
     const openGoogleMap = () => {
@@ -275,10 +289,12 @@ function Project(props) {
         addressData.province+" "+addressData.country, '_blank');
     }
     const duplicateProject = () => {
+        props.loadingSpinner(true)
         fetch('http://ssrv5.sednove.com:4000/projects/duplicate?uid='+projectData.uid)
         .then(() => {
             props.reload_projects()
         })
+        .then(() => props.loadingSpinner(false))
         .catch(err => alert(err))
     }
     const getCities = () => {
@@ -392,11 +408,13 @@ function Project(props) {
         sendQuestionsEmail("clientsProjectQuestions", uid_questions)
     }
     const sendQuestionsEmail = (name, uid_questions) => {
+        props.loadingSpinner(true)
         fetch(`http://ssrv5.sednove.com:4000/nodemailer/sendquestions?uid_project=${projectData.uid}&uid_client=${projectData.uid_client}&uid_questions=${uid_questions}&uid_service=${projectData.uid_service}&message=${messageSendQuestions}&name=${name}`)
         .then(() => {
           addHistory("2", "");
           setPopupOpenSendQuestions(false)
         })
+        .then(() => props.loadingSpinner(false))
         .catch(err => alert(err))
     }
     const showHideElement = (uid_element) => {
@@ -426,9 +444,10 @@ function Project(props) {
             fetch(`http://ssrv5.sednove.com:4000/get_dialer_prefix?first_digits=${_phone}`)
             .then(response => response.json())
             .then(response => {
-                if (response.data[0] !== undefined)
+                if (response.data[0] !== undefined){
                     response.data[0].ext = "*" + response.data[0].ext
                     setDialerPrefix(response.data[0].ext)
+                }
             })
             .catch(err => alert(err))
         }
@@ -453,8 +472,44 @@ function Project(props) {
             console.log(res.data.data.path)
             let content = `<p><img name="added_img_${projectData.uid}" src="https://soumissionrenovation.ca${res.data.data.path}" width="375" /></p>`
             setProjectData({...projectData,description: projectData.description+content})
-            //saveAjax("sr_project",projectData.uid,"description",content)
         })
+    }
+    const handlePaste = (e) => {
+        retrieveImageFromClipboard(e, function(imageBlob){
+            // If there's an image, display it in the canvas
+            if(imageBlob){
+                var canvas = document.getElementById("mycanvas");
+                var ctx = canvas.getContext('2d');
+                // Create an image to render the blob on the canvas
+                var img = new Image();
+                // Once the image loads, render the img on the canvas
+                img.onload = function(){
+                    // Update dimensions of the canvas with the dimensions of the image
+                    canvas.width = this.width;
+                    canvas.height = this.height;
+                    // Draw the image
+                    ctx.drawImage(img, 0, 0);
+                    // Upload image:
+                    e.preventDefault();
+                    var formData = new FormData($('#formarea')[0]);
+                    var blob = dataURLtoBlob(canvas.toDataURL('image/jpeg'));
+                    var filename = "pasted_" + projectData.uid + "_" + nbPastedImg + ".jpg";
+                    setNbPastedImg(nbPastedImg + 1)
+                    formData.append("avatar", blob, filename);
+                    axios.post('http://ssrv5.sednove.com:4000/upload-file', formData)
+                    .then(res => {
+                        console.log(res.data.data.path)
+                        let content = `<p><img name="added_img_${projectData.uid}" src="https://soumissionrenovation.ca${res.data.data.path}" width="375" /></p>`
+                        setProjectData({...projectData,description: projectData.description+content})
+                    })
+                };
+                // Crossbrowser support for URL
+                var URLObj = window.URL || window.webkitURL;
+                // Creates a DOMString containing a URL representing the object given in the parameter
+                // namely the original Blob
+                img.src = URLObj.createObjectURL(imageBlob);
+            }
+            });
     }
 
     //#region Address Autocomplete
@@ -502,6 +557,7 @@ function Project(props) {
         saveAjax("sr_address", addressData.uid, "uid_city", e.target.value)
     }
     const saveAddress = (terms) => {
+        props.loadingSpinner(true)
         fetch(`http://ssrv5.sednove.com:4000/address/save?street_no=${(terms[0].value)?terms[0].value:""}&street=${(terms[1].value)?terms[1].value:""}&city=${(terms[2].value)?terms[2].value:""}&province=${(terms[3].value)?terms[3].value:""}&country=${(terms[4].value)?terms[4].value:""}&uid_client=${projectData.uid_client}&phone1=${(addressData.phone1)?addressData.phone1:""}&phone2=${(addressData.phone2)?addressData.phone2:""}`)
         .then(response => response.json())
         .then(response => {
@@ -510,6 +566,7 @@ function Project(props) {
             getUidCity(terms[2].value, response.data.uid_address)
             getZipCode(response.data.uid_address, terms)
         })
+        .then(() => props.loadingSpinner(false))
         .catch(err => alert(err))
     }
     const getUidCity = (name, uid_address) => {
@@ -533,9 +590,69 @@ function Project(props) {
     }
 
     //#endregion
-
-    return (
+    //#region PASTE IMAGE
+    const dataURLtoBlob = (dataURL) => {
+        var BASE64_MARKER = ';base64,';
+        if (dataURL.indexOf(BASE64_MARKER) == -1) {
+          var parts = dataURL.split(',');
+          var contentType = parts[0].split(':')[1];
+          var raw = decodeURIComponent(parts[1]);
+      
+          return new Blob([raw], {
+            type: contentType
+          });
+        }
+        var parts = dataURL.split(BASE64_MARKER);
+        var contentType = parts[0].split(':')[1];
+        var raw = window.atob(parts[1]);
+        var rawLength = raw.length;
+        var uInt8Array = new Uint8Array(rawLength);
+        for (var i = 0; i < rawLength; ++i) {
+          uInt8Array[i] = raw.charCodeAt(i);
+        }
+      
+        return new Blob([uInt8Array], {
+          type: contentType
+        });
+    }
+    const retrieveImageFromClipboard = (e, callback) => {
+          if(e.clipboardData == false){
+              if(typeof(callback) == "function"){
+                  callback(undefined);
+              }
+          };
+          
+          var items = e.clipboardData.items;
+          
+          if(items == undefined){
+              if(typeof(callback) == "function"){
+                  callback(undefined);
+              }
+          };
+          
+          for (var i = 0; i < items.length; i++) {
+              // Skip content if not image
+              if (items[i].type.indexOf("image") == -1) {
+              
+              continue;    
+              }
+              
+              // Retrieve image on clipboard as blob
+              var blob = items[i].getAsFile();
+      
+              if(typeof(callback) == "function"){
+                  callback(blob);
+              }
+          }
+    }
+    //#endregion
+//#endregion
+    
+return (
         <div class="col project">
+            <form enctype="multipart/form-data" method="post" id="formarea">
+                <canvas hidden id="mycanvas" />
+            </form>
             <div class="row p-2">
                 <div class="col">
                     <img width="40px" src={activate_logo} alt="Activer" onClick={() => setPopupActivateProject(true)}></img>
@@ -777,12 +894,13 @@ function Project(props) {
                     <div class="col-12 description__label">
                 <h6 style={{textAlign:"center"}}>Description</h6>
                 </div>
-                    <div class="col-12 description__editor">
+                    <div class="col-12 description__editor" id={"editor_"+projectData.uid}>
                     <Editor
                         apiKey="rpg0vwsws34iize77k9uf2afya24z2f7wqq3i3rg84evn1k3" 
                         initialValue={projectData.description}
                         value={projectData.description}
                         outputFormat='html'
+                        onPaste={handlePaste}
                         init={{
                         height: 400,
                         menubar: false,

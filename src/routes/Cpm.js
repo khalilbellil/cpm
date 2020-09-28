@@ -6,8 +6,10 @@ import { Button, TextField, Card } from '@material-ui/core'
 import History from '../components/History'
 import top_arrow_icon from "../img/left-arrow.png";
 import down_arrow_icon from "../img/right-arrow.png";
+import lock from "../img/lock.png";
+import unlock from "../img/unlock.png";
 import Popup from "reactjs-popup";
-import { CardTitle } from 'reactstrap'
+import { CardTitle, Spinner } from 'reactstrap'
 
 function Cpm() {
     const [uidClient, setUidClient] = useState(0)
@@ -17,6 +19,8 @@ function Cpm() {
     const [username, setUsername] = useState('Khalil')
     const [popupSearchClient , setPopupSearchClient] = useState(false)
     const [searchValue, setSearchValue] = useState('')
+    const [isLocked, setIsLocked] = useState(false)
+    const [lockedBy, setLockedBy] = useState('')
 
     useEffect(() => {
         document.getElementById("mySidebar").style.width = "0px" //Initialize sidebar
@@ -35,25 +39,46 @@ function Cpm() {
         .catch(err => alert(err))
     }
     const createProject = () => {
+        loadingSpinner(true)
         if (uidClient !== 0)
             fetch('http://ssrv5.sednove.com:4000/projects/new?uid_client='+uidClient)
             .then(() => {
                 getClientProjectsUids(uidClient)
             })
+            .then(() => loadingSpinner(false))
             .catch(err => alert(err))
         else
             alert("Aucun client selectionné")
     }
     const lockClient = (uid_client) => {
+        loadingSpinner(true)
         fetch(`http://ssrv5.sednove.com:4000/clients/lock?uid_client=${uid_client}&origin=gestion-client&username=${username}`)
         .then(response => response.json())
         .then(response => {
-          (response.data.already_locked === "no")?getClientProjectsUids(uid_client):alert("Client déjà verrouillé")
+            if(response.data.already_locked === "no"){
+                setIsLocked(true)
+                setLockedBy('')
+                getClientProjectsUids(uid_client)
+                addHistory("9", "")
+            }else{
+                setLockedBy(response.data.locked_by)
+                alert("Client déjà verrouillé par " + response.data.locked_by)
+                setClientProjectsUids([])
+                setIsLocked(false)
+            }
         })
+        .then(() => loadingSpinner(false))
         .catch(err => alert(err))
     }
     const unlockAllClients = () =>{
+        loadingSpinner(true)
+        setClientProjectsUids([])
         fetch(`http://ssrv5.sednove.com:4000/clients/unlock?origin=gestion-client&username=${username}`)
+        .then(() => {
+            setIsLocked(false)
+            addHistory("10", "")
+        })
+        .then(() => loadingSpinner(false))
         .catch(err => alert(err))
     }
     const getNextClient = () =>{
@@ -63,8 +88,6 @@ function Cpm() {
         .then(response => {
           if (response.data.found !== "no"){
             setUidClient(response.data[0].uid)
-            setReloadHistory(true)
-            unlockAllClients()
             lockClient(response.data[0].uid)
           }else{
             alert("Aucun client trouvé")
@@ -92,6 +115,7 @@ function Cpm() {
         }
     }
     const searchClient = (new_tab) => {
+        loadingSpinner(true)
         if (searchValue !== ""){
             if (searchValue[0] === ":"){
                 getClientByPhone(searchValue, new_tab)
@@ -108,6 +132,7 @@ function Cpm() {
             }
         }
         setPopupSearchClient(false)
+        loadingSpinner(false)
     }
     const getClientByPhone = (phone, new_tab) => {
         phone = phone.replace(":","")
@@ -139,9 +164,42 @@ function Cpm() {
         })
         .catch(err => alert(err))
     }
+    const handleLock = () =>{
+        if (isLocked){
+            if (lockedBy === ''){
+                unlockAllClients()
+            }
+        }else{
+            lockClient(uidClient)
+        }
+        
+    }
+    const addHistory = (uid_msg, comments) => {
+        fetch(`http://ssrv5.sednove.com:4000/client_history/add?uid_msg=${uid_msg}&uid_client=${uidClient}&uid_project=
+        &username=${username}&comments=${comments}`)
+        .then(() => {
+            if (reloadHistory){
+                setReloadHistory(false)
+            }else{
+                setReloadHistory(true)
+            }
+        })
+        .catch(err => alert(err))
+    }
+    const loadingSpinner = (start) => {
+        let spinner = document.getElementById("loading_spinner")
+        if (start){
+            spinner.style.display = "block"
+        }else{
+            spinner.style.display = "none"
+        }
+    }
 
     return (
         <div>
+            <Spinner animation="border" role="status" style={{zIndex: "1000",position: "absolute", top: "50%", left: "50%", display: "none"}} id="loading_spinner">
+                <span className="sr-only">Loading...</span>
+            </Spinner>
             <div id="mySidebar" class="sidebar">
                 <History reload_history={reloadHistory} uid_client={uidClient}/>
             </div>
@@ -179,6 +237,8 @@ function Cpm() {
                         </Popup>
                         <Button style={{marginLeft:"8px"}} variant="contained" color="primary" onClick={getNextClient}>Prochain client</Button>
                         <Button style={{marginLeft:"8px"}} variant="contained" color="primary" onClick={createProject} disabled={(uidClient === 0)}>Nouveau projet</Button>
+                        <img width="40px" id="hide_history" src={(isLocked)?lock:unlock} alt={(isLocked)?"Unlock":"Lock"} onClick={() => handleLock()} />
+                        <i style={{color: "red"}}>{(lockedBy !== '')?"Verrouillé par: "+lockedBy:""}</i>
                     </div>
                 </div>
                 <br/>
@@ -186,7 +246,7 @@ function Cpm() {
                 {
                     clientProjectsUids.map((p, i) => (
                     <div class="col-12 mb-5">
-                        <Project reload_projects={() => {getClientProjectsUids(uidClient)}} onReloadHistory={handleHistoryChange} uid={p.uid}/>
+                        <Project loadingSpinner={(load) => loadingSpinner(load)} reload_projects={() => {getClientProjectsUids(uidClient)}} onReloadHistory={handleHistoryChange} uid={p.uid}/>
                     </div>
                     ))
                 }
