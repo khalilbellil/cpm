@@ -197,7 +197,7 @@ function Cpm() {
 
     return (
         <div>
-            <Spinner animation="border" role="status" style={{zIndex: "1000",position: "absolute", top: "50%", left: "50%", display: "none"}} id="loading_spinner">
+            <Spinner animation="border" role="status" style={{zIndex: "1000",position: "fixed", top: "50%", left: "50%", display: "none", color: "blue"}} id="loading_spinner">
                 <span className="sr-only">Loading...</span>
             </Spinner>
             <div id="mySidebar" class="sidebar">
