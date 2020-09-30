@@ -452,14 +452,6 @@ function Project(props) {
             .catch(err => alert(err))
         }
     }
-    const handleUploadFile = (file) => {
-        const data = new FormData()
-        data.append('avatar', file)
-        axios.post('http://ssrv5.sednove.com:4000/upload-file', data).then(res => {
-            if (res.status === 200)
-                alert(res.status)
-        })
-    }
     const onFileChangeHandler = (event) => {
         setSelectedFile(event.target.files[0])
         console.log(event.target.files[0])
@@ -467,10 +459,12 @@ function Project(props) {
     const onClickUploadFile = (event) => {
         const data = new FormData()
         data.append('avatar', selectedFile)
+        console.log("selectedFile" + selectedFile)
         axios.post('http://ssrv5.sednove.com:4000/upload-file', data)
         .then(res => {
-            console.log(res.data.data.path)
-            let content = `<p><img name="added_img_${projectData.uid}" src="https://soumissionrenovation.ca${res.data.data.path}" width="375" /></p>`
+            let path = res.data.data.path
+            path = path.replace("./sn_uploads/", "/sn_uploads/")
+            let content = `<p><img name="added_img_${projectData.uid}" src="https://soumissionrenovation.ca${path}" width="375" /></p>`
             setProjectData({...projectData,description: projectData.description+content})
         })
     }
@@ -498,8 +492,9 @@ function Project(props) {
                     formData.append("avatar", blob, filename);
                     axios.post('http://ssrv5.sednove.com:4000/upload-file', formData)
                     .then(res => {
-                        console.log(res.data.data.path)
-                        let content = `<p><img name="added_img_${projectData.uid}" src="https://soumissionrenovation.ca${res.data.data.path}" width="375" /></p>`
+                        let path = res.data.data.path
+                        path = path.replace("./sn_uploads/", "/sn_uploads/")
+                        let content = `<p><img name="added_img_${projectData.uid}" src="https://soumissionrenovation.ca${path}" width="375" /></p>`
                         setProjectData({...projectData,description: projectData.description+content})
                     })
                 };
@@ -1000,7 +995,7 @@ return (
                                 <option value="-1">Choisir un service</option>
                                 {servicesData.map((option) => (
                                     <option key={option.uid} value={option.uid}>
-                                    {option.name_fr}
+                                    {option.name_long_fr}
                                     </option>
                                 ))}
                         </TextField>
