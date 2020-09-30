@@ -16,19 +16,25 @@ function Client(props) {
         .catch(err => alert(err))
     }
     const getClientData = (uid_client) => {
-        if (uid_client !== 0)
+        if (uid_client !== 0){
             fetch('http://ssrv5.sednove.com:4000/clients/get?uid='+uid_client)
             .then(response => response.json())
             .then(response => {
                 if (response.data[0] !== undefined){
+                    response.data[0] = JSON.parse(JSON.stringify(response.data[0]).replace(/\:null/gi, "\:\"\"")) //remove all null fields
                     setClientData(response.data[0])
                 }else{
                     setClientData({})
+                    setClientAddressData({})
                     alert("Client introuvable !")
                 }
             })
             .then(() => getClientAddress(uid_client))
             .catch(err => alert(err))
+        }else{
+            setClientData({})
+            setClientAddressData({})
+        }
     }
     const getClientAddress = (uid_client) => {
         fetch('http://ssrv5.sednove.com:4000/client_phone?uid_client='+uid_client)

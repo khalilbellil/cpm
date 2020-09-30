@@ -71,10 +71,19 @@ function Project(props) {
         .then(response => response.json())
         .then(response => {
             if (response.data[0] !== undefined){
+                let budget_type_final = response.data[0].budget_type
+                if (budget_type_final !== null){
+                    if (budget_type_final === "1"){
+                        budget_type_final = `Budget pour main d'oeuvre uniquement`
+                    }else if (budget_type_final === "2"){
+                        budget_type_final = `Budget pour main d'oeuvre + matériaux`
+                    }
+                }
                 response.data[0] = {...response.data[0], 
                     delay_from: format(new Date(response.data[0].delay_from), 'yyyy-MM-dd'), 
                     delay_to: format(new Date(response.data[0].delay_to), 'yyyy-MM-dd'),
-                    sn_cdate: format(new Date(response.data[0].sn_cdate), 'yyyy-MM-dd hh:mm:ss a'), nb_files: countFiles(response.data[0])
+                    sn_cdate: format(new Date(response.data[0].sn_cdate), 'yyyy-MM-dd hh:mm:ss a'), nb_files: countFiles(response.data[0]),
+                    budget_type: budget_type_final
                 }
                 setProjectData(response.data[0])
                 getServicesData()
@@ -937,7 +946,7 @@ return (
                         </FormGroup>
                         <FormGroup>
                         <Label>Type de budget:</Label>
-                        <Input type="text" value={(projectData.budget_type === "1")?"Budget pour main d'oeuvre uniquement":"Budget pour main d'oeuvre + matériaux"} disabled/>
+                        <Input type="text" value={projectData.budget_type} disabled/>
                         </FormGroup>
                         <FormGroup>
                         <Label>Type de propriété:</Label>
