@@ -10,8 +10,9 @@ import lock from "../img/lock.png";
 import unlock from "../img/unlock.png";
 import Popup from "reactjs-popup";
 import { CardTitle, Spinner } from 'reactstrap'
+import { useHistory, useLocation } from 'react-router-dom'
 
-function Cpm() {
+function Cpm(props) {
     const [uidClient, setUidClient] = useState(0)
     const [clientProjectsUids, setClientProjectsUids] = useState([])
     const [opened, setOpened] = useState(false)
@@ -21,6 +22,8 @@ function Cpm() {
     const [searchValue, setSearchValue] = useState('')
     const [isLocked, setIsLocked] = useState(false)
     const [lockedBy, setLockedBy] = useState('')
+    const location = useLocation()
+    const history = useHistory()
 
     useEffect(() => {
         document.getElementById("mySidebar").style.width = "0px" //Initialize sidebar
@@ -29,11 +32,22 @@ function Cpm() {
             setUidClient(urlParams.get('uid_client'))
             lockClient(urlParams.get('uid_client'))
         }
+        
     }, []);
+    useEffect(() => {
+        if(location.state !== undefined){
+            if(location.state.isLogged !== 'yes'){
+                history.push('/')
+            }  
+        }else{
+            history.push('/')
+        }
+        
+     }, [location]);
 
     const getClientProjectsUids = (uid_client) => {
         setClientProjectsUids([])
-        fetch('http://localhost:4000/client/get_projects?uid_client='+uid_client)
+        fetch('http://ssrv5.sednove.com:4000/client/get_projects?uid_client='+uid_client)
         .then(response => response.json())
         .then(response => setClientProjectsUids(response.data))
         .catch(err => alert(err))
@@ -41,7 +55,7 @@ function Cpm() {
     const createProject = () => {
         loadingSpinner(true)
         if (uidClient !== 0)
-            fetch('http://localhost:4000/projects/new?uid_client='+uidClient)
+            fetch('http://ssrv5.sednove.com:4000/projects/new?uid_client='+uidClient)
             .then(() => {
                 getClientProjectsUids(uidClient)
             })
@@ -52,7 +66,7 @@ function Cpm() {
     }
     const lockClient = (uid_client) => {
         loadingSpinner(true)
-        fetch(`http://localhost:4000/clients/lock?uid_client=${uid_client}&origin=gestion-client&username=${username}`)
+        fetch(`http://ssrv5.sednove.com:4000/clients/lock?uid_client=${uid_client}&origin=gestion-client&username=${username}`)
         .then(response => response.json())
         .then(response => {
             if(response.data.already_locked === "no"){
@@ -73,7 +87,7 @@ function Cpm() {
     const unlockAllClients = () =>{
         loadingSpinner(true)
         setClientProjectsUids([])
-        fetch(`http://localhost:4000/clients/unlock?origin=gestion-client&username=${username}`)
+        fetch(`http://ssrv5.sednove.com:4000/clients/unlock?origin=gestion-client&username=${username}`)
         .then(() => {
             setIsLocked(false)
             addHistory("10", "")
@@ -83,7 +97,7 @@ function Cpm() {
     }
     const getNextClient = () =>{
         setUidClient(0)
-        fetch(`http://localhost:4000/clients/get_next_client?username=${username}&origin=gestion-client&lg=fr`)
+        fetch(`http://ssrv5.sednove.com:4000/clients/get_next_client?username=${username}&origin=gestion-client&lg=fr`)
         .then(response => response.json())
         .then(response => {
           if (response.data.found !== "no"){
@@ -136,7 +150,7 @@ function Cpm() {
     }
     const getClientByPhone = (phone, new_tab) => {
         phone = phone.replace(":","")
-        fetch(`http://localhost:4000/clients/get_by_phone?phone=${phone}`)
+        fetch(`http://ssrv5.sednove.com:4000/clients/get_by_phone?phone=${phone}`)
         .then(response => response.json())
         .then(response => {
             if (new_tab){
@@ -151,7 +165,7 @@ function Cpm() {
     }
     const getClientByProject = (uid_project, new_tab) => {
         uid_project = uid_project.replace("#","")
-        fetch(`http://localhost:4000/clients/get_by_project?uid_project=${uid_project}`)
+        fetch(`http://ssrv5.sednove.com:4000/clients/get_by_project?uid_project=${uid_project}`)
         .then(response => response.json())
         .then(response => {
             if (new_tab){
@@ -175,7 +189,7 @@ function Cpm() {
         
     }
     const addHistory = (uid_msg, comments) => {
-        fetch(`http://localhost:4000/client_history/add?uid_msg=${uid_msg}&uid_client=${uidClient}&uid_project=
+        fetch(`http://ssrv5.sednove.com:4000/client_history/add?uid_msg=${uid_msg}&uid_client=${uidClient}&uid_project=
         &username=${username}&comments=${comments}`)
         .then(() => {
             if (reloadHistory){

@@ -18,7 +18,7 @@ function History(props) {
     const getHistory = (uid) => {
         if (uid !== 0){
             setHistoryData([])
-            fetch(`http://localhost:4000/client_history/get_by_client?uid_client=${uid}&lg=fr`)
+            fetch(`http://ssrv5.sednove.com:4000/client_history/get_by_client?uid_client=${uid}&lg=fr`)
             .then(response => response.json())
             .then(response => setHistoryData(response.data))
             .catch(err => alert(err))

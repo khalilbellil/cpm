@@ -15,7 +15,7 @@ function ClientInfo(props) {
 
     const getClientInfo = (uid_client) => {
         if (uid_client !== 0)
-            fetch('http://localhost:4000/client_info/nb_project?uid_client='+uid_client)
+            fetch('http://ssrv5.sednove.com:4000/client_info/nb_project?uid_client='+uid_client)
             .then(response => response.json())
             .then(response => {
                 setNbProject(response.data.nb_project)
