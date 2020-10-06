@@ -244,8 +244,8 @@ function Cpm(props) {
                             onChange={(e)=>{setSearchValue(e.target.value)}} 
                             value={searchValue}/>
                             <div class="row p-2">
-                                <Button className="popupbox_button" variant="contained" color="primary" onClick={()=> {searchClient(true)}}>Rechercher(Nouvelle fenêtre)</Button>
-                                <Button className="ml-1 popupbox_button" variant="contained" color="primary" onClick={()=> {searchClient(false)}}>Rechercher(Même fenêtre)</Button>
+                                {/* <Button className="popupbox_button" variant="contained" color="primary" onClick={()=> {searchClient(true)}}>Rechercher(Nouvelle fenêtre)</Button> */}
+                                <Button className="popupbox_button" variant="contained" color="primary" onClick={()=> {searchClient(false)}}>Rechercher(Même fenêtre)</Button>
                                 <Button className="ml-1 popupbox_button" variant="contained" color="primary" onClick={()=> {setPopupSearchClient(false)}}>Annuler</Button>
                             </div>
                             </Card>

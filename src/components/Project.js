@@ -84,13 +84,13 @@ function Project(props) {
                 let delay_from = ''
                 let delay_to = ''
                 let sn_cdate = ''
-                if(response.data[0].delay_from !== undefined && response.data[0].delay_from !== ''){
+                if(response.data[0].delay_from !== undefined && response.data[0].delay_from !== '0000-00-00'){
                     delay_from = format(new Date(response.data[0].delay_from), 'yyyy-MM-dd')
                 }
-                if(response.data[0].delay_to !== undefined && response.data[0].delay_to !== ''){
+                if(response.data[0].delay_to !== undefined && response.data[0].delay_to !== '0000-00-00'){
                     delay_to = format(new Date(response.data[0].delay_to), 'yyyy-MM-dd')
                 }
-                if(response.data[0].sn_cdate !== undefined && response.data[0].sn_cdate !== ''){
+                if(response.data[0].sn_cdate !== undefined && response.data[0].sn_cdate !== '0000-00-00'){
                     sn_cdate = format(new Date(response.data[0].sn_cdate), 'yyyy-MM-dd hh:mm:ss a')
                 }
                 response.data[0] = {...response.data[0], 
@@ -235,8 +235,8 @@ function Project(props) {
             //validate
             fetch('http://ssrv5.sednove.com:4000/projects/activate?uid='+projectData.uid+'&employee='+projectData.employee)
             .then(() => {
-                getProjectData(projectData.uid);
                 addHistory("8", "")
+                setProjectData({...projectData, status:'active'})
                 setPopupActivateProject(false)
             })
             .then(() => props.loadingSpinner(false))
@@ -251,10 +251,9 @@ function Project(props) {
             fetch(`http://ssrv5.sednove.com:4000/projects/cancel?uid=${projectData.uid}&status=${projectData.status}&uid_cancel_reason=${(uidCancelReason === '')?"0":uidCancelReason}
             &message=${messageCancelReason}&uid_client=${projectData.uid_client}&uid_user=${uidUser}`)
             .then(() => {
-              //clientProjectCanceled(uid_project)
-              getProjectData(projectData.uid);
-              addHistory("7", "")
-              setPopupCancelProject(false)
+                addHistory("7", "")
+                setProjectData({...projectData, status:'canceled'})
+                setPopupCancelProject(false)
             })
             .then(() => props.loadingSpinner(false))
             .catch(err => alert(err))
