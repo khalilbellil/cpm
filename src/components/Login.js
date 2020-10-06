@@ -24,7 +24,7 @@ function Login() {
             if (response.data.isLogged === 'yes'){
                 history.push({
                     pathname: '/cpm',
-                    state: { isLogged: 'yes' }
+                    state: { isLogged: 'yes', username: usernameInput}
                   })
                 //alert("Logged")
             }else{

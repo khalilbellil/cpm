@@ -39,7 +39,7 @@ function Project(props) {
     const [popupOpenFiles, setPopupOpenFiles] = useState(false)
     const [popupCancelProject, setPopupCancelProject] = useState(false)
     const [popupActivateProject, setPopupActivateProject] = useState(false)
-    const [username, setUsername] = useState('Khalil')
+    const [username, setUsername] = useState(props.username)
     const [uidUser, setUidUser] = useState(335)
     const [getNewPrice, setGetNewPrice] = useState(false)
     const [completeAddress, setCompleteAddress] = useState('')
@@ -81,10 +81,22 @@ function Project(props) {
                         budget_type_final = `Budget pour main d'oeuvre + matériaux`
                     }
                 }
+                let delay_from = ''
+                let delay_to = ''
+                let sn_cdate = ''
+                if(response.data[0].delay_from !== undefined && response.data[0].delay_from !== ''){
+                    delay_from = format(new Date(response.data[0].delay_from), 'yyyy-MM-dd')
+                }
+                if(response.data[0].delay_to !== undefined && response.data[0].delay_to !== ''){
+                    delay_to = format(new Date(response.data[0].delay_to), 'yyyy-MM-dd')
+                }
+                if(response.data[0].sn_cdate !== undefined && response.data[0].sn_cdate !== ''){
+                    sn_cdate = format(new Date(response.data[0].sn_cdate), 'yyyy-MM-dd hh:mm:ss a')
+                }
                 response.data[0] = {...response.data[0], 
-                    delay_from: format(new Date(response.data[0].delay_from), 'yyyy-MM-dd'), 
-                    delay_to: format(new Date(response.data[0].delay_to), 'yyyy-MM-dd'),
-                    sn_cdate: format(new Date(response.data[0].sn_cdate), 'yyyy-MM-dd hh:mm:ss a'), nb_files: countFiles(response.data[0]),
+                    delay_from: delay_from, 
+                    delay_to: delay_to,
+                    sn_cdate: sn_cdate, nb_files: countFiles(response.data[0]),
                     budget_type: budget_type_final
                 }
                 setProjectData(response.data[0])

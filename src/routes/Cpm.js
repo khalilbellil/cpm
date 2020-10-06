@@ -38,7 +38,9 @@ function Cpm(props) {
         if(location.state !== undefined){
             if(location.state.isLogged !== 'yes'){
                 history.push('/')
-            }  
+            }else{
+                setUsername(location.state.username)
+            }
         }else{
             history.push('/')
         }
@@ -260,7 +262,7 @@ function Cpm(props) {
                 {
                     clientProjectsUids.map((p, i) => (
                     <div class="col-12 mb-5">
-                        <Project loadingSpinner={(load) => loadingSpinner(load)} reload_projects={() => {getClientProjectsUids(uidClient)}} onReloadHistory={handleHistoryChange} uid={p.uid}/>
+                        <Project username={username} loadingSpinner={(load) => loadingSpinner(load)} reload_projects={() => {getClientProjectsUids(uidClient)}} onReloadHistory={handleHistoryChange} uid={p.uid}/>
                     </div>
                     ))
                 }
