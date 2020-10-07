@@ -419,6 +419,7 @@ function Project(props) {
         saveAjax("sr_project",projectData.uid,"quality",e.target.value)
     }
     const handleProjectTypeChange = (e) => {
+        alert('a')
         setProjectData({...projectData, uid_project_type:e.target.value})
         saveAjax("sr_project",projectData.uid,"uid_project_type",e.target.value)
     }
@@ -1124,6 +1125,7 @@ return (
                             <option value="1">Résidentiel</option>
                             <option value="2">Commercial</option>
                             <option value="4">Construction neuve</option>
+                            <option value="5">Test</option>
                         </TextField>
                     </div>
                     <div class="col-12">
