@@ -419,7 +419,6 @@ function Project(props) {
         saveAjax("sr_project",projectData.uid,"quality",e.target.value)
     }
     const handleProjectTypeChange = (e) => {
-        alert('a')
         setProjectData({...projectData, uid_project_type:e.target.value})
         saveAjax("sr_project",projectData.uid,"uid_project_type",e.target.value)
     }
