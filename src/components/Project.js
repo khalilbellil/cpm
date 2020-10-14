@@ -1097,19 +1097,22 @@ return (
                         <div class="row">
                             <div class="col">
                                 <TextField defaultValue=" " label="Prix*" variant="outlined" name="lead_price"
-                                onChange={(e)=>{setProjectData({...projectData, lead_price: e.target.value});saveAjax("sr_project",projectData.uid, "lead_price", e.target.value)}} 
+                                onChange={(e)=>{setProjectData({...projectData, lead_price: e.target.value});}} 
+                                onBlur={(e)=>saveAjax("sr_project",projectData.uid, "lead_price", e.target.value)}
                                 value={projectData.lead_price}/>
                             </div>
                             <div class="col">
                                 <TextField defaultValue=" " label="Valeur estimée*" variant="outlined" name="estimated_value"
-                                onChange={(e)=>{setProjectData({...projectData, estimated_value: e.target.value});saveAjax("sr_project",projectData.uid, "estimated_value", e.target.value)}} 
+                                onChange={(e)=>{setProjectData({...projectData, estimated_value: e.target.value});}} 
+                                onBlur={(e)=>saveAjax("sr_project",projectData.uid, "estimated_value", e.target.value)}
                                 value={projectData.estimated_value}/>
                             </div>
                         </div>
                     </div>
                     <div class="col-12">
                         <TextField defaultValue=" " label="Budget partagé" variant="outlined" name="shared_budget"
-                        onChange={(e)=>{setProjectData({...projectData, shared_budget: e.target.value});saveAjax("sr_project",projectData.uid, "shared_budget", e.target.value)}} 
+                        onChange={(e)=>{setProjectData({...projectData, shared_budget: e.target.value});}} 
+                        onBlur={(e)=>saveAjax("sr_project",projectData.uid, "shared_budget", e.target.value)}
                         value={projectData.shared_budget} helperText="ex: 1000$ à 3000$ (main d'oeuvre et materiaux)"/>
                     </div>
                     <div class="col-12">
@@ -1129,12 +1132,14 @@ return (
                     </div>
                     <div class="col-12">
                         <TextField defaultValue=" " label="Commentaire interne" variant="outlined" name="comments"
-                        onChange={(e)=>{setProjectData({...projectData, comments: e.target.value});saveAjax("sr_project",projectData.uid, "comments", e.target.value)}} 
+                        onChange={(e)=>{setProjectData({...projectData, comments: e.target.value});}} 
+                        onBlur={(e)=>saveAjax("sr_project",projectData.uid, "comments", e.target.value)}
                         value={projectData.comments}/>
                     </div>
                     <div class="col-12">
                         <TextField defaultValue=" " label="Informations additionnelles" variant="outlined" name="additional_info"
-                        onChange={(e)=>{setProjectData({...projectData, additional_info: e.target.value});saveAjax("sr_project",projectData.uid, "additional_info", e.target.value)}} 
+                        onChange={(e)=>{setProjectData({...projectData, additional_info: e.target.value});}} 
+                        onBlur={(e)=>saveAjax("sr_project",projectData.uid, "additional_info", e.target.value)}
                         value={projectData.additional_info} helperText="L'entrepreneur verra ces informations apres avoir acheter le projet"/>
                     </div>
                     <div class="col-12">
