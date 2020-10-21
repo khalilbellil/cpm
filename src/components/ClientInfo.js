@@ -3,7 +3,7 @@ import '../styles/Client.css'
 import { Badge } from '@material-ui/core'
 
 function ClientInfo(props) {
-    const local = false
+    const local = true
     const apiAdress = (local)?"localhost:4000":"ssrv5.sednove.com:4000"
     const [uidClient, setUidClient] = useState(0)
     const [nbProject, setNbProject] = useState(0)

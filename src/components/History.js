@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import '../styles/Project.css'
 
 function History(props) {
-    const local = false
+    const local = true
     const apiAdress = (local)?"localhost:4000":"ssrv5.sednove.com:4000"
     const [historyData, setHistoryData] = useState([])
     const [uidClient, setUidClient] = useState([])

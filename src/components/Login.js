@@ -4,7 +4,7 @@ import { TextField, Input, FormGroup, Button } from '@material-ui/core'
 import { Spinner } from 'reactstrap';
 
 function Login() {
-    const local = false
+    const local = true
     const apiAdress = (local)?"localhost:4000":"ssrv5.sednove.com:4000"
     const [usernameInput, setUsernameInput] = useState('')
     const [passwordInput, setPasswordInput] = useState('')

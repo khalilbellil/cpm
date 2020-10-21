@@ -23,7 +23,7 @@ import $ from "jquery";
 import axios from 'axios';
 
 function Project(props) {
-    const local = false
+    const local = true
     const apiAdress = (local)?"localhost:4000":"ssrv5.sednove.com:4000"
     const [projectData, setProjectData] = useState({})
     const [addressData, setAddressData] = useState({})

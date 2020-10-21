@@ -3,7 +3,7 @@ import '../styles/Client.css'
 import { TextField } from '@material-ui/core'
 
 function Client(props) {
-    const local = false
+    const local = true
     const apiAdress = (local)?"localhost:4000":"ssrv5.sednove.com:4000"
     const [clientData, setClientData] = useState({})
     const [clientAddressData, setClientAddressData] = useState({})
