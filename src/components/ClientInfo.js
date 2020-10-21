@@ -3,6 +3,8 @@ import '../styles/Client.css'
 import { Badge } from '@material-ui/core'
 
 function ClientInfo(props) {
+    const local = false
+    const apiAdress = (local)?"localhost:4000":"ssrv5.sednove.com:4000"
     const [uidClient, setUidClient] = useState(0)
     const [nbProject, setNbProject] = useState(0)
     const [nbActivatedProject, setNbActivatedProject] = useState(0)
@@ -15,7 +17,7 @@ function ClientInfo(props) {
 
     const getClientInfo = (uid_client) => {
         if (uid_client !== 0)
-            fetch('http://ssrv5.sednove.com:4000/client_info/nb_project?uid_client='+uid_client)
+            fetch(`http://${apiAdress}/client_info/nb_project?uid_client=${uid_client}`)
             .then(response => response.json())
             .then(response => {
                 setNbProject(response.data.nb_project)

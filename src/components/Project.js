@@ -23,6 +23,8 @@ import $ from "jquery";
 import axios from 'axios';
 
 function Project(props) {
+    const local = false
+    const apiAdress = (local)?"localhost:4000":"ssrv5.sednove.com:4000"
     const [projectData, setProjectData] = useState({})
     const [addressData, setAddressData] = useState({})
     const [servicesData, setServicesData] = useState([])
@@ -64,12 +66,12 @@ function Project(props) {
 //#region FUNCTIONS
     const saveAjax = (table, uid, one, one_val) => {
         props.loadingSpinner(true)
-        fetch(encodeURI(`http://ssrv5.sednove.com:4000/update/one?table=${table}&uid=${uid}&one=${one}&one_val=${one_val}`))
+        fetch(encodeURI(`http://${apiAdress}/update/one?table=${table}&uid=${uid}&one=${one}&one_val=${one_val}`))
         .then(() => props.loadingSpinner(false))
         .catch(err => alert(err))
     }
     const getProjectData = (uid_project) => {
-        fetch('http://ssrv5.sednove.com:4000/projects/get?uid='+uid_project)
+        fetch(`http://${apiAdress}/projects/get?uid=${uid_project}`)
         .then(response => response.json())
         .then(response => {
             if (response.data[0] !== undefined){
@@ -114,14 +116,14 @@ function Project(props) {
         .catch(err => alert(err))
     }
     const getServicesData = () => {
-        fetch('http://ssrv5.sednove.com:4000/services')
+        fetch(`http://${apiAdress}/services`)
         .then(response => response.json())
         .then(response => setServicesData(response.data))
         .catch(err => alert(err))
     }
     const getSubServicesData = (uid_service) => {
         if(uid_service !== undefined){
-            fetch('http://ssrv5.sednove.com:4000/subservices?uid_service='+uid_service)
+            fetch(`http://${apiAdress}/subservices?uid_service=${uid_service}`)
             .then(response => response.json())
             .then(response => {
                 setSubServicesData(response.data)
@@ -132,7 +134,7 @@ function Project(props) {
     }
     const getAddress = (uid_address) => {
         if (uid_address)
-            fetch('http://ssrv5.sednove.com:4000/address?uid='+uid_address)
+            fetch(`http://${apiAdress}/address?uid=${uid_address}`)
             .then(response => response.json())
             .then(response => {
                 response.data[0] = {...response.data[0], 
@@ -171,7 +173,7 @@ function Project(props) {
         return count
     }
     const getCallBackLater = (uid_project) => {
-        fetch(`http://ssrv5.sednove.com:4000/callbacklater/get?uid_project=${uid_project}`)
+        fetch(`http://${apiAdress}/callbacklater/get?uid_project=${uid_project}`)
         .then(response => response.json())
         .then(response => {
           setCallBackLaterData(response.data[0])
@@ -179,13 +181,13 @@ function Project(props) {
         .catch(err => alert(err))
     }
     const getCancelReasons = () => {
-        fetch('http://ssrv5.sednove.com:4000/projects/get_cancel_reasons')
+        fetch(`http://${apiAdress}/projects/get_cancel_reasons`)
         .then(response => response.json())
         .then(response => setCancelReasonsData(response.data))
         .catch(err => alert(err))
     }
     const getSentQuestionsAnswers = (uid_project) => {
-        fetch(`http://ssrv5.sednove.com:4000/projects/get_sent_question_answer?uid_project=${uid_project}`)
+        fetch(`http://${apiAdress}/projects/get_sent_question_answer?uid_project=${uid_project}`)
         .then(response => response.json())
         .then(response => {
             setSentQuestionsAnswersData(response.sr_project_sent_question_answer)
@@ -195,7 +197,7 @@ function Project(props) {
     }
     const saveAjaxAddress = (table, uid, one, one_val) => {
         if (addressData.uid !== undefined){
-            fetch(`http://ssrv5.sednove.com:4000/update/one?table=${table}&uid=${uid}&one=${one}&one_val=${one_val}`)
+            fetch(`http://${apiAdress}/update/one?table=${table}&uid=${uid}&one=${one}&one_val=${one_val}`)
             .then(() => {
                 if(one === "phone1"){
                     setAddressData({...addressData, phone1: one_val})
@@ -205,7 +207,7 @@ function Project(props) {
             })
             .catch(err => alert("saveAjaxAddress" + err))
           }else{
-            fetch(`http://ssrv5.sednove.com:4000/address/add?one=${one}&one_val=${one_val}&uid_client=${projectData.uid_client}`)
+            fetch(`http://${apiAdress}/address/add?one=${one}&one_val=${one_val}&uid_client=${projectData.uid_client}`)
             .then(response => response.json())
             .then(response => {
               setProjectData({...projectData, uid_address: response.data.uid_address})
@@ -217,14 +219,14 @@ function Project(props) {
     }
     const getServiceQuestions = (uid_service) => {
         setserviceQuestionsData([])
-        fetch('http://ssrv5.sednove.com:4000/service_questions?uid_service='+uid_service)
+        fetch(`http://${apiAdress}/service_questions?uid_service=${uid_service}`)
         .then(response => response.json())
         .then(response => setserviceQuestionsData(response.data))
         .catch(err => alert(err))
     }
     const getGeneralServiceQuestions = () => {
         setGeneralServiceQuestionsData([])
-        fetch('http://ssrv5.sednove.com:4000/service_questions?uid_service=161')
+        fetch(`http://${apiAdress}/service_questions?uid_service=161`)
         .then(response => response.json())
         .then(response => setGeneralServiceQuestionsData(response.data))
         .catch(err => alert(err))
@@ -233,7 +235,7 @@ function Project(props) {
         if(projectData.status !== "active"){
             props.loadingSpinner(true)
             //validate
-            fetch('http://ssrv5.sednove.com:4000/projects/activate?uid='+projectData.uid+'&employee='+projectData.employee)
+            fetch(`http://${apiAdress}/projects/activate?uid=${projectData.uid}&employee=${projectData.employee}`)
             .then(() => {
                 addHistory("8", "")
                 setProjectData({...projectData, status:'active'})
@@ -248,7 +250,7 @@ function Project(props) {
     const cancelProject = () => {
         if(projectData.status !== "cancelled-before-qualification" && projectData.status !== "cancelled-after-qualification"){
             props.loadingSpinner(true)
-            fetch(`http://ssrv5.sednove.com:4000/projects/cancel?uid=${projectData.uid}&status=${projectData.status}&uid_cancel_reason=${(uidCancelReason === '')?"0":uidCancelReason}
+            fetch(`http://${apiAdress}/projects/cancel?uid=${projectData.uid}&status=${projectData.status}&uid_cancel_reason=${(uidCancelReason === '')?"0":uidCancelReason}
             &message=${messageCancelReason}&uid_client=${projectData.uid_client}&uid_user=${uidUser}`)
             .then(() => {
                 addHistory("7", "")
@@ -262,7 +264,7 @@ function Project(props) {
         }
     }
     const addHistory = (uid_msg, comments) => {
-        fetch(`http://ssrv5.sednove.com:4000/client_history/add?uid_msg=${uid_msg}&uid_client=${projectData.uid_client}&uid_project=${projectData.uid}
+        fetch(`http://${apiAdress}/client_history/add?uid_msg=${uid_msg}&uid_client=${projectData.uid_client}&uid_project=${projectData.uid}
         &username=${username}&comments=${comments}`)
         .then(() => {
           props.onReloadHistory(true)
@@ -270,7 +272,7 @@ function Project(props) {
         .catch(err => alert(err))
     }
     const getPrice = (uid_subservice) => {
-        fetch('http://ssrv5.sednove.com:4000/subservices/get?uid='+uid_subservice)
+        fetch(`http://${apiAdress}/subservices/get?uid=${uid_subservice}`)
         .then(response => response.json())
         .then(response => {
           saveAjax("sr_project",projectData.uid,"lead_price",response.data[0].lead_price)
@@ -286,7 +288,7 @@ function Project(props) {
         var call_back_date = date_callbacklater + " " + time_callbacklater + ":00";
         if(callBackLaterData === {}){
             props.loadingSpinner(true)
-            fetch(`http://ssrv5.sednove.com:4000/callbacklater/add?uid_project=${projectData.uid}&uid_client=${projectData.uid_client}&call_back_date=${call_back_date}&followup_agent=${username}&comments=${comment_callbacklater}`)
+            fetch(`http://${apiAdress}/callbacklater/add?uid_project=${projectData.uid}&uid_client=${projectData.uid_client}&call_back_date=${call_back_date}&followup_agent=${username}&comments=${comment_callbacklater}`)
             .then(() => {
                 addHistory("3", "")
                 setPopupCallBackLater(false)
@@ -295,7 +297,7 @@ function Project(props) {
             .catch(err => alert(err))
         }else{
             props.loadingSpinner(true)
-            fetch(`http://ssrv5.sednove.com:4000/callbacklater/update?uid_project=${projectData.uid}&uid_client=${projectData.uid_client}&call_back_date=${call_back_date}&followup_agent=${username}&comments=${comment_callbacklater}`)
+            fetch(`http://${apiAdress}/callbacklater/update?uid_project=${projectData.uid}&uid_client=${projectData.uid_client}&call_back_date=${call_back_date}&followup_agent=${username}&comments=${comment_callbacklater}`)
             .then(() => {
                 addHistory("3", "")
                 setPopupCallBackLater(false)
@@ -307,7 +309,7 @@ function Project(props) {
     const flagForReview = () => {
         if(projectData.flag_for_review !== "1"){
             props.loadingSpinner(true)
-            fetch(`http://ssrv5.sednove.com:4000/flagforreview/update?uid_project=${projectData.uid}&followup_agent=${username}`)
+            fetch(`http://${apiAdress}/flagforreview/update?uid_project=${projectData.uid}&followup_agent=${username}`)
             .then(() => {
                 //addHistory("3", "")
                 setPopupOpenFlagForReview(false)
@@ -322,7 +324,7 @@ function Project(props) {
     }
     const duplicateProject = () => {
         props.loadingSpinner(true)
-        fetch('http://ssrv5.sednove.com:4000/projects/duplicate?uid='+projectData.uid)
+        fetch(`http://${apiAdress}/projects/duplicate?uid=${projectData.uid}`)
         .then(() => {
             props.reload_projects()
         })
@@ -330,7 +332,7 @@ function Project(props) {
         .catch(err => alert(err))
     }
     const getCities = () => {
-        fetch(`http://ssrv5.sednove.com:4000/city`)
+        fetch(`http://${apiAdress}/city`)
         .then(response => response.json())
         .then(response => setCityData(response.data))
         .catch(err => alert(err))
@@ -441,7 +443,7 @@ function Project(props) {
     }
     const sendQuestionsEmail = (name, uid_questions) => {
         props.loadingSpinner(true)
-        fetch(`http://ssrv5.sednove.com:4000/nodemailer/sendquestions?uid_project=${projectData.uid}&uid_client=${projectData.uid_client}&uid_questions=${uid_questions}&uid_service=${projectData.uid_service}&message=${messageSendQuestions}&name=${name}`)
+        fetch(`http://${apiAdress}/nodemailer/sendquestions?uid_project=${projectData.uid}&uid_client=${projectData.uid_client}&uid_questions=${uid_questions}&uid_service=${projectData.uid_service}&message=${messageSendQuestions}&name=${name}`)
         .then(() => {
           addHistory("2", "");
           setPopupOpenSendQuestions(false)
@@ -473,7 +475,7 @@ function Project(props) {
                 _phone = phone[0] + phone[1] + phone[2]
             }
             _phone = _phone.replace(" ", "")
-            fetch(`http://ssrv5.sednove.com:4000/get_dialer_prefix?first_digits=${_phone}`)
+            fetch(`http://${apiAdress}/get_dialer_prefix?first_digits=${_phone}`)
             .then(response => response.json())
             .then(response => {
                 if (response.data[0] !== undefined){
@@ -492,7 +494,7 @@ function Project(props) {
         const data = new FormData()
         data.append('avatar', selectedFile)
         console.log("selectedFile" + selectedFile)
-        axios.post('http://ssrv5.sednove.com:4000/upload-file', data)
+        axios.post(`http://${apiAdress}/upload-file`, data)
         .then(res => {
             let path = res.data.data.path
             path = path.replace("./sn_uploads/", "/sn_uploads/")
@@ -522,7 +524,7 @@ function Project(props) {
                     var filename = "pasted_" + projectData.uid + "_" + nbPastedImg + ".jpg";
                     setNbPastedImg(nbPastedImg + 1)
                     formData.append("avatar", blob, filename);
-                    axios.post('http://ssrv5.sednove.com:4000/upload-file', formData)
+                    axios.post(`http://${apiAdress}/upload-file`, formData)
                     .then(res => {
                         let path = res.data.data.path
                         path = path.replace("./sn_uploads/", "/sn_uploads/")
@@ -585,7 +587,7 @@ function Project(props) {
     }
     const saveAddress = (terms) => {
         props.loadingSpinner(true)
-        fetch(`http://ssrv5.sednove.com:4000/address/save?street_no=${(terms[0].value)?terms[0].value:""}&street=${(terms[1].value)?terms[1].value:""}&city=${(terms[2].value)?terms[2].value:""}&province=${(terms[3].value)?terms[3].value:""}&country=${(terms[4].value)?terms[4].value:""}&uid_client=${projectData.uid_client}&phone1=${(addressData.phone1)?addressData.phone1:""}&phone2=${(addressData.phone2)?addressData.phone2:""}`)
+        fetch(`http://${apiAdress}/address/save?street_no=${(terms[0].value)?terms[0].value:""}&street=${(terms[1].value)?terms[1].value:""}&city=${(terms[2].value)?terms[2].value:""}&province=${(terms[3].value)?terms[3].value:""}&country=${(terms[4].value)?terms[4].value:""}&uid_client=${projectData.uid_client}&phone1=${(addressData.phone1)?addressData.phone1:""}&phone2=${(addressData.phone2)?addressData.phone2:""}`)
         .then(response => response.json())
         .then(response => {
             setProjectData({...projectData, uid_address: response.data.uid_address})
@@ -597,7 +599,7 @@ function Project(props) {
         .catch(err => alert(err))
     }
     const getUidCity = (name, uid_address) => {
-        fetch(`http://ssrv5.sednove.com:4000/city/get?name=${name}`)
+        fetch(`http://${apiAdress}/city/get?name=${name}`)
         .then(response => response.json())
         .then(response => {
             setAddressData({...addressData, uid_city: response.data[0].uid})
@@ -606,7 +608,7 @@ function Project(props) {
         .catch(err => alert(err))
     }
     const getZipCode = (uid_address, terms) => {
-        fetch(`http://ssrv5.sednove.com:4000/get_zipcode?address=${terms[0].value + " " + terms[1].value + " " + terms[2].value + " " + terms[3].value + " " + terms[4].value}`)
+        fetch(`http://${apiAdress}/get_zipcode?address=${terms[0].value + " " + terms[1].value + " " + terms[2].value + " " + terms[3].value + " " + terms[4].value}`)
         .then(response => response.json())
         .then(response => {
             setAddressData({...addressData, zip: response.data[0].zipcode})

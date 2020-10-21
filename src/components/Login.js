@@ -4,6 +4,8 @@ import { TextField, Input, FormGroup, Button } from '@material-ui/core'
 import { Spinner } from 'reactstrap';
 
 function Login() {
+    const local = false
+    const apiAdress = (local)?"localhost:4000":"ssrv5.sednove.com:4000"
     const [usernameInput, setUsernameInput] = useState('')
     const [passwordInput, setPasswordInput] = useState('')
     const history = useHistory()
@@ -18,7 +20,7 @@ function Login() {
     }
     const login = () => {
         loadingSpinner(true)
-        fetch(`http://ssrv5.sednove.com:4000/login?username=${usernameInput}&password=${passwordInput}`)
+        fetch(`http://${apiAdress}/login?username=${usernameInput}&password=${passwordInput}`)
         .then(response => response.json())
         .then(response => {
             if (response.data.isLogged === 'yes'){

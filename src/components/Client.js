@@ -3,7 +3,8 @@ import '../styles/Client.css'
 import { TextField } from '@material-ui/core'
 
 function Client(props) {
-
+    const local = false
+    const apiAdress = (local)?"localhost:4000":"ssrv5.sednove.com:4000"
     const [clientData, setClientData] = useState({})
     const [clientAddressData, setClientAddressData] = useState({})
 
@@ -12,12 +13,12 @@ function Client(props) {
     }, [props.uid]);
 
     const saveAjax = (table, uid, one, one_val) => {
-        fetch(`http://ssrv5.sednove.com:4000/update/one?table=${table}&uid=${uid}&one=${one}&one_val=${one_val}`)
+        fetch(`http://${apiAdress}/update/one?table=${table}&uid=${uid}&one=${one}&one_val=${one_val}`)
         .catch(err => alert(err))
     }
     const getClientData = (uid_client) => {
         if (uid_client !== 0){
-            fetch('http://ssrv5.sednove.com:4000/clients/get?uid='+uid_client)
+            fetch(`http://${apiAdress}/clients/get?uid=${uid_client}`)
             .then(response => response.json())
             .then(response => {
                 if (response.data[0] !== undefined){
@@ -37,7 +38,7 @@ function Client(props) {
         }
     }
     const getClientAddress = (uid_client) => {
-        fetch('http://ssrv5.sednove.com:4000/client_phone?uid_client='+uid_client)
+        fetch(`http://${apiAdress}/client_phone?uid_client=${uid_client}`)
         .then(response => response.json())
         .then(response => setClientAddressData(response.data[0])
         )

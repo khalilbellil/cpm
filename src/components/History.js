@@ -4,6 +4,8 @@ import { format } from 'date-fns';
 import '../styles/Project.css'
 
 function History(props) {
+    const local = false
+    const apiAdress = (local)?"localhost:4000":"ssrv5.sednove.com:4000"
     const [historyData, setHistoryData] = useState([])
     const [uidClient, setUidClient] = useState([])
 
@@ -18,7 +20,7 @@ function History(props) {
     const getHistory = (uid) => {
         if (uid !== 0){
             setHistoryData([])
-            fetch(`http://ssrv5.sednove.com:4000/client_history/get_by_client?uid_client=${uid}&lg=fr`)
+            fetch(`http://${apiAdress}/client_history/get_by_client?uid_client=${uid}&lg=fr`)
             .then(response => response.json())
             .then(response => setHistoryData(response.data))
             .catch(err => alert(err))
